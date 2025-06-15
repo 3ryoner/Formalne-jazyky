@@ -1,0 +1,51 @@
+#   {ab | c[a]}b
+
+class DKA:
+    def check(self, word: str) -> bool:
+        return self._s0(word, 0)
+
+    def _s0(self, word, pos):
+        if pos == len(word):
+            return False
+        if word[pos] == 'a':
+            return self._s1(word, pos + 1)
+        elif word[pos] == 'c':
+            return self._s3(word, pos + 1)
+        elif word[pos] == 'b':
+            return pos + 1 == len(word)
+        return False
+
+    def _s1(self, word, pos):
+        if pos < len(word) and word[pos] == 'b':
+            return self._s0(word, pos + 1)
+        return False
+
+    def _s3(self, word, pos):
+        if pos < len(word):
+            if word[pos] == 'a':
+                return self._s0(word, pos + 1)
+            elif word[pos] == 'b':
+                return pos + 1 == len(word)
+        elif pos < len(word) + 1:
+            return False
+        return False
+
+
+
+
+
+'''
+     {R} (0,1)                           R{R} (1, viac)
+
+-------------------                 -|R|------------------
+    ^         |                           ^         |
+    |___|R|___|                           |___|R|___|
+
+
+    [R] (0,1)
+
+-------------------
+    |         ^
+    |___|R|___|
+
+'''

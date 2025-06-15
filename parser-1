@@ -1,5 +1,16 @@
 '<' + '+ -' + '*'
 
+'''
+<expression> ::= <less> EOF ;
+
+<less>       ::= <plus_minus> { "<" <plus_minus> } ;
+
+<plus_minus> ::= <multiplication> { ("+" | "-") <multiplication> } ;
+
+<multiplication> ::= <factor> { "*" <factor> } ;
+
+<factor>     ::= NUMBER | "(" <less> ")" ;
+'''
 
 def parse(self):
         result = self.less()
