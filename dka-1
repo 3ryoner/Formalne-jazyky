@@ -1,51 +1,80 @@
 #   {ab | c[a]}b
 
+from enum import Enum, auto
+
+class TokenType(Enum):
+    A = auto()
+    B = auto()
+    C = auto()
+    EOF = auto()
+
+class Token:
+    def __init__(self, type):
+        self.type = type
+
+class Lexer:
+    def __init__(self, input_text):
+        self.input = input_text
+        self.pos = 0
+
+    def get_next_token(self):
+        if self.pos >= len(self.input):
+            return Token(TokenType.EOF)
+
+        char = self.input[self.pos]
+        self.pos += 1
+
+        if char == 'a':
+            return Token(TokenType.A)
+        elif char == 'b':
+            return Token(TokenType.B)
+        elif char == 'c':
+            return Token(TokenType.C)
+        else:
+            raise ValueError(f"Invalid character: {char}")
+
 class DKA:
-    def check(self, word: str) -> bool:
-        return self._s0(word, 0)
+    def __init__(self):
+        self.lexer = None
+        self.current_token = None
 
-    def _s0(self, word, pos):
-        if pos == len(word):
+    def consume(self, expected_type):
+        if self.current_token.type == expected_type:
+            self.current_token = self.lexer.get_next_token()
+        else:
+            raise SyntaxError(f"Expected {expected_type}, got {self.current_token.type}")
+
+    def check(self, word):
+        try:
+            self.lexer = Lexer(word)
+            self.current_token = self.lexer.get_next_token()
+            if len(word) == 0:
+                return False
+
+            self.rec()
+
+            if self.current_token.type != TokenType.B:
+                return False
+            self.consume(TokenType.B)
+
+            return self.current_token.type == TokenType.EOF
+
+        except (SyntaxError, ValueError):
             return False
-        if word[pos] == 'a':
-            return self._s1(word, pos + 1)
-        elif word[pos] == 'c':
-            return self._s3(word, pos + 1)
-        elif word[pos] == 'b':
-            return pos + 1 == len(word)
-        return False
 
-    def _s1(self, word, pos):
-        if pos < len(word) and word[pos] == 'b':
-            return self._s0(word, pos + 1)
-        return False
+    def rec(self):
+        if self.lexer.pos >= len(self.lexer.input):
+            return
 
-    def _s3(self, word, pos):
-        if pos < len(word):
-            if word[pos] == 'a':
-                return self._s0(word, pos + 1)
-            elif word[pos] == 'b':
-                return pos + 1 == len(word)
-        elif pos < len(word) + 1:
-            return False
-        return False
+        if self.current_token.type == TokenType.A:
+            self.consume(TokenType.A)
+            if self.current_token.type != TokenType.B:
+                return False
+            self.consume(TokenType.B)
+        elif self.current_token.type == TokenType.C:
+            self.consume(TokenType.C)
+            if self.current_token.type == TokenType.A:
+                self.consume(TokenType.A)
+        else: raise SyntaxError(f"Expected {TokenType.A}, got {self.current_token.type}")
 
-
-
-
-
-'''
-     {R} (0,1)                           R{R} (1, viac)
-
--------------------                 -|R|------------------
-    ^         |                           ^         |
-    |___|R|___|                           |___|R|___|
-
-
-    [R] (0,1)
-
--------------------
-    |         ^
-    |___|R|___|
-
-'''
+        self.rec()
